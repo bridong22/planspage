@@ -1,0 +1,1006 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* =============================================================================
+   Growth Design System — CSS custom properties (Figma: Growth DS v1.0)
+   Canonical: --ds-*  |  Legacy aliases: --tz-* (kept for reference)
+   ============================================================================= */
+
+:root {
+  /* —— Brand —— */
+  --ds-color-brand-yellow: #ffca10;
+  --ds-color-brand-yellow-light: #ffdc60;
+  --ds-color-brand-yellow-panel: #fff4cf;
+  --ds-color-brand-blue: #4094f7;
+  --ds-color-brand-blue-light: #9bcffd;
+  --ds-color-brand-blue-hover: #5da7ff;
+
+  /* —— Semantic —— */
+  --ds-color-semantic-success: #45c987;
+  --ds-color-semantic-success-dark: #3aa771;
+  --ds-color-semantic-success-soft: #daf4e7;
+  --ds-color-semantic-danger: #ff5c6e;
+  --ds-color-semantic-warning: #ffa450;
+
+  /* —— Neutrals —— */
+  --ds-color-neutral-900: #241f20;
+  --ds-color-neutral-800: #151112;
+  --ds-color-neutral-600: #6d6a6a;
+  --ds-color-neutral-400: #b6b4b5;
+  --ds-color-neutral-300: #a3a3a3;
+  --ds-color-border: #e7e7e7;
+  --ds-color-surface-muted: #f8f8f8;
+  --ds-color-surface-canvas: #ffffff;
+
+  /* —— Semantic roles —— */
+  --ds-color-text-primary: var(--ds-color-neutral-900);
+  --ds-color-text-muted: var(--ds-color-neutral-600);
+  --ds-color-text-placeholder: var(--ds-color-neutral-400);
+  --ds-color-action-primary: var(--ds-color-brand-blue);
+  --ds-color-action-primary-hover: var(--ds-color-brand-blue-hover);
+  --ds-color-focus-ring: var(--ds-color-brand-blue-light);
+  --ds-color-entry-cta: var(--ds-color-brand-yellow);
+
+  /* —— Spacing (4 px grid) —— */
+  --ds-space-1: 0.25rem;
+  --ds-space-2: 0.5rem;
+  --ds-space-3: 0.75rem;
+  --ds-space-4: 1rem;
+  --ds-space-5: 1.25rem;
+  --ds-space-6: 1.5rem;
+  --ds-space-8: 2rem;
+  --ds-space-10: 2.5rem;
+  --ds-space-12: 3rem;
+  --ds-space-14: 3.5rem;
+  --ds-space-16: 4rem;
+
+  /* —— Typography (Mulish) —— */
+  --ds-font-family: "Mulish", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ds-text-h1-size: 2.5rem;
+  --ds-text-h1-line: 3rem;
+  --ds-text-h2-size: 2rem;
+  --ds-text-h2-line: 2.5rem;
+  --ds-text-h3-size: 1.5rem;
+  --ds-text-h3-line: 2rem;
+  --ds-text-h4-size: 1.25rem;
+  --ds-text-h4-line: 1.75rem;
+  --ds-text-body-size: 1rem;
+  --ds-text-body-line: 1.5rem;
+  --ds-text-small-size: 0.875rem;
+  --ds-text-small-line: 1.25rem;
+  --ds-text-tiny-size: 0.75rem;
+  --ds-text-tiny-line: 1rem;
+  --ds-text-label-caps-size: 0.75rem;
+  --ds-text-label-caps-line: 1.125rem;
+  --ds-text-label-caps-tracking: 0.08em;
+
+  /* —— Radius —— */
+  --ds-radius-sm: 4px;
+  --ds-radius-md: 6px;
+  --ds-radius-lg: 8px;
+  --ds-radius-xl: 12px;
+  --ds-radius-card: 8px;
+  --ds-radius-full: 999px;
+
+  /* —— Elevation —— */
+  --ds-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --ds-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --ds-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --ds-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+
+  /* —— Layout —— */
+  --ds-content-max-width: 80rem;
+  --ds-modal-max-sm: 650px;
+  --ds-modal-max-md: 740px;
+  --ds-modal-max-lg: 922px;
+}
+
+/* ── Reset / Base ──────────────────────────────────────────────────────────── */
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--ds-font-family);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ds-color-text-primary);
+  background: var(--ds-color-surface-muted);
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ── App Shell ─────────────────────────────────────────────────────────────── */
+
+.app {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── Sidebar ───────────────────────────────────────────────────────────────── */
+
+.sidebar {
+  /* Figma desktop: 204px; tablet (≤1279px): 81px; mobile (≤767px): 41px */
+  width: 204px;
+  flex-shrink: 0;
+  background: #1a1718;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.2s ease;
+}
+
+.sidebar__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0.75rem 0.875rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sidebar__logo-mark {
+  width: 32px;
+  height: 32px;
+  background: var(--ds-color-brand-yellow);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #1a1718;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+.sidebar__brand {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.sidebar__search {
+  margin: 0.625rem 0.625rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: var(--ds-radius-md);
+  padding: 0.4rem 0.6rem;
+  cursor: text;
+}
+
+.sidebar__search-icon {
+  color: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.sidebar__search-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.sidebar__section-label {
+  margin: 1rem 0.75rem 0.25rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.sidebar__nav {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.5rem;
+}
+
+.sidebar__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--ds-radius-md);
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  white-space: nowrap;
+}
+
+.sidebar__nav-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #ffffff;
+}
+
+.sidebar__nav-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.sidebar__nav-label {
+  /* text label — hidden at icon-only widths */
+}
+
+.sidebar__nav-chevron {
+  margin-left: auto;
+  opacity: 0.4;
+}
+
+/* ── Main Column ───────────────────────────────────────────────────────────── */
+
+.main-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top Bar ───────────────────────────────────────────────────────────────── */
+
+.topbar {
+  height: 60px;
+  flex-shrink: 0;
+  background: var(--ds-color-surface-canvas);
+  border-bottom: 1px solid var(--ds-color-border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 1.25rem;
+  gap: 1rem;
+}
+
+.topbar__bell {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--ds-radius-full);
+  color: var(--ds-color-neutral-600);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.topbar__bell:hover {
+  background: var(--ds-color-surface-muted);
+}
+
+.topbar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.625rem 0.25rem 0.25rem;
+  border: 1px solid var(--ds-color-border);
+  border-radius: var(--ds-radius-full);
+  cursor: pointer;
+  background: var(--ds-color-surface-canvas);
+  transition: background 0.12s;
+}
+
+.topbar__user:hover {
+  background: var(--ds-color-surface-muted);
+}
+
+.topbar__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ds-color-neutral-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.topbar__username {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ds-color-text-primary);
+}
+
+.topbar__chevron {
+  color: var(--ds-color-neutral-400);
+}
+
+/* ── Content Scroll ────────────────────────────────────────────────────────── */
+
+/* Figma: bg #f8f8f8, py-32px, centered content */
+.content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--ds-color-surface-muted);
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Pricing Page ──────────────────────────────────────────────────────────── */
+
+/* Centered container for back button + hero — Figma: 856px wide on desktop */
+.pg-section {
+  width: 100%;
+  max-width: 856px;
+  padding-bottom: 32px;
+}
+
+.pg-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  /* Figma: bold 13px / 19.5px, blue */
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ds-color-action-primary);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.pg-back:hover {
+  text-decoration: underline;
+}
+
+.pg-hero {
+  text-align: center;
+  margin: 0;
+}
+
+.pg-hero__title {
+  /* Figma: bold 22px / 28px */
+  margin: 0 0 0.5rem;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--ds-color-neutral-900);
+}
+
+.pg-hero__sub {
+  /* Figma: regular 14px / 20px */
+  margin: 0 0 1rem;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ds-color-text-muted);
+}
+
+/* ── Billing Toggle (radio-dot style) ──────────────────────────────────────── */
+
+.billing {
+  display: inline-flex;
+  align-items: center;
+  /* Figma: gap 12px between Monthly and Annually groups */
+  gap: 12px;
+  justify-content: center;
+}
+
+.billing__opt {
+  display: inline-flex;
+  align-items: center;
+  /* Figma: gap 5px between radio and label */
+  gap: 5px;
+  /* Figma: regular 12px / 16px, #6d6a6a */
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--ds-color-neutral-600);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.billing__radio {
+  /* Figma: size 15px */
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ds-color-neutral-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.12s, background 0.12s;
+}
+
+.billing__opt--active .billing__radio {
+  border-color: var(--ds-color-brand-blue);
+  background: var(--ds-color-brand-blue);
+}
+
+.billing__radio-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.12s;
+}
+
+.billing__opt--active .billing__radio-dot {
+  background: #fff;
+}
+
+/* "Save 10%" — Figma: bold 10px, #3aa771 on #daf4e7, h-16px px-8 rounded-8 */
+.billing__save {
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  color: var(--ds-color-semantic-success-dark);
+  background: var(--ds-color-semantic-success-soft);
+}
+
+/* ── Plan Grid ─────────────────────────────────────────────────────────────── */
+
+/* Desktop: 3 × 280px + 2 × 8px = 856px wide */
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 280px);
+  /* Figma: 8px gap between cards */
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* ── Plan Card ─────────────────────────────────────────────────────────────── */
+
+/* Figma: bg white, 1px #e7e7e7 border, 10px radius, 24px padding, 758px total height */
+.plan-card {
+  position: relative;
+  background: var(--ds-color-surface-canvas);
+  border: 1px solid var(--ds-color-border);
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Figma card total height = 758px; inner = 758 - 48px padding = 710px */
+  min-height: 710px;
+}
+
+/* Pro "MOST POPULAR" state: yellow border */
+.plan-card--popular {
+  border-color: var(--ds-color-brand-yellow);
+}
+
+/* MOST POPULAR ribbon — top-right corner, Figma: bg #ffcb10, px-16 py-3, rounded-tr-10 rounded-bl-18.4 */
+.plan-card__popular-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #ffcb10;
+  padding: 3px 16px;
+  border-radius: 0 10px 0 18px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--ds-color-neutral-900);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+/* ── Card Info section (name → CTA) ────────────────────────────────────────── */
+
+/*
+ * Figma: info section fills the space above the fixed 348px table.
+ * With 710px inner height → info = 710 - 348 = 362px.
+ * flex: 1 + flex-col lets desc grow to absorb variable text length,
+ * keeping seat / price / CTA at the same Y across all three cards.
+ */
+.plan-card__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 16px;
+}
+
+/* Figma: bold 16px / 24px, #241f20 */
+.plan-card__name {
+  flex-shrink: 0;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 24px;
+  color: var(--ds-color-neutral-900);
+}
+
+/*
+ * Figma: regular 14px / 20px, #6d6a6a, pt-8.
+ * flex: 1 causes this to absorb any extra height so that seat / price / CTA
+ * always land at the same position regardless of description word count.
+ */
+.plan-card__desc {
+  flex: 1;
+  margin: 0;
+  padding-top: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ds-color-text-muted);
+}
+
+/* Seat selector wrapper — Figma: h-116px, pb-16px, flex-col, gap-8px */
+.plan-card__seat-section {
+  height: 116px;
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Grow: items start (no centering) */
+.plan-card__seat-section--start {
+  justify-content: flex-start;
+}
+
+/* Pro / Studio: items centered */
+.plan-card__seat-section--center {
+  justify-content: center;
+}
+
+/* Figma: bold 14px / 20px, #241f20 */
+.plan-card__seat-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 20px;
+  color: var(--ds-color-neutral-900);
+}
+
+/* Grow static seat box — Figma: border-2 #9bcffd, w-52 h-32, px-12 py-4, medium 14px */
+.grow-seat-box {
+  width: 52px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border: 2px solid var(--ds-color-brand-blue-light);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.006em;
+  color: var(--ds-color-neutral-900);
+  background: var(--ds-color-surface-canvas);
+  flex-shrink: 0;
+}
+
+/* Chip row wrapper — Figma: flex gap-8px */
+.seat-chips-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Individual chip — Figma: w-52 h-32, px-12 py-4, medium 14px, tracking -0.084px */
+.seat-chip {
+  width: 52px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 24px;
+  letter-spacing: -0.006em;
+  color: var(--ds-color-neutral-800);
+  background: var(--ds-color-surface-canvas);
+  /* Figma inactive: border #e6e6e6 */
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: center;
+  flex-shrink: 0;
+  transition: border-color 0.1s;
+}
+
+.seat-chip:hover:not(.seat-chip--active) {
+  border-color: var(--ds-color-brand-blue-light);
+}
+
+/* Figma active: border-2 #9bcffd */
+.seat-chip--active {
+  border: 2px solid var(--ds-color-brand-blue-light);
+  color: var(--ds-color-neutral-900);
+}
+
+/* Price block — Figma: gap-8px, pb-12px */
+.plan-card__price-block {
+  padding-bottom: 12px;
+}
+
+.plan-card__price {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Figma: bold 28px / 40px */
+.plan-card__price-num {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 40px;
+  color: var(--ds-color-neutral-900);
+}
+
+/*
+ * Figma: the suffix column is a flex-col with two stacked lines:
+ *   "/ mo"
+ *   "per location (1–4 locations)"   ← only on Studio
+ * Both lines fit within the 40px price-number height, so adding the note
+ * does NOT increase the price-block height.
+ */
+.plan-card__price-suffix {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ds-color-text-muted);
+}
+
+/* Second line in suffix — same size, no extra bottom spacing */
+.plan-card__price-note {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--ds-color-text-muted);
+}
+
+/* CTA button — Figma: bg #4094f7, h-30px, semibold 14px, tracking -0.006em, rounded-4 */
+.plan-card__cta {
+  width: 100%;
+  height: 30px;
+  background: var(--ds-color-brand-blue);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: -0.006em;
+  cursor: pointer;
+  transition: filter 0.12s;
+}
+
+.plan-card__cta:hover {
+  filter: brightness(1.08);
+}
+
+/* ── Card Table section (features + addons) ────────────────────────────────── */
+
+/*
+ * Figma: h-[348px] fixed. Features section is flex:1 so it expands to fill
+ * all available space — this pins the addons section to the same Y position
+ * across all three cards regardless of how many features each plan has.
+ */
+.plan-card__table {
+  height: 348px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* flex:1 causes features to absorb all surplus height, keeping addons bottom-aligned */
+.plan-card__features {
+  flex: 1;
+}
+
+/* Figma: bold 12px / 16px, #241f20 */
+.plan-card__section-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--ds-color-neutral-900);
+}
+
+/* Figma: flex-col gap-8px */
+.plan-card__feature-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Figma: flex gap-4px, items-center, 12px / 16px, #241f20 */
+.plan-card__feature-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ds-color-neutral-900);
+}
+
+/* Figma checkmark: filled/checkmark-l SVG, 10px, green */
+.plan-card__check {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ds-color-semantic-success);
+  font-size: 9px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Figma: outline/tooltip/warning, 11px circle */
+.plan-card__info-icon {
+  flex-shrink: 0;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px solid var(--ds-color-neutral-400);
+  font-size: 7px;
+  line-height: 10px;
+  text-align: center;
+  color: var(--ds-color-text-muted);
+  cursor: default;
+}
+
+/* Optional addons section (Grow / Pro) */
+/* Figma: bold 12px / 16px, #241f20 — DARK not muted */
+.plan-card__addons-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  color: var(--ds-color-neutral-900);
+}
+
+/* Figma: flex gap-4px, 12px / 16px, #241f20 */
+.plan-card__addon-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ds-color-neutral-900);
+  margin-bottom: 8px;
+}
+
+.plan-card__addon-item:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Studio "ADD-ONS INCLUDED" yellow panel ────────────────────────────────── */
+
+/* position:relative so the save badge can float above the panel */
+.plan-card__included {
+  position: relative;
+  padding-top: 12px;
+}
+
+/* "SAVE $500+ annually" — floats above the yellow panel at top-right, matching Figma */
+.plan-card__included-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 14px;
+  white-space: nowrap;
+  /* Figma: #ffdc60 light yellow — same family as the MOST POPULAR badge */
+  background: var(--ds-color-brand-yellow-light);
+  color: var(--ds-color-neutral-900);
+}
+
+/* Figma: bg-[#fff4cf] rounded-[10px] */
+.plan-card__included-inner {
+  background: var(--ds-color-brand-yellow-panel);
+  border-radius: 10px;
+  padding: 12px 8px 8px;
+}
+
+/* Figma: bold 10px / 16px, uppercase, letter-spaced */
+.plan-card__included-title {
+  margin: 0 0 8px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-color-neutral-900);
+}
+
+/* ── Pricing Page Footer ────────────────────────────────────────────────────── */
+
+.pg-footer {
+  text-align: center;
+  width: 100%;
+  max-width: 856px;
+}
+
+.pg-footer__link {
+  display: inline-block;
+  /* Figma: 16px / 24px body size, blue */
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--ds-color-action-primary);
+  text-decoration: none;
+  margin-bottom: 8px;
+}
+
+.pg-footer__link:hover {
+  text-decoration: underline;
+}
+
+.pg-footer__legal {
+  margin: 0;
+  font-size: 0.6875rem;
+  line-height: 1.55;
+  color: var(--ds-color-neutral-300);
+}
+
+/* =============================================================================
+   Responsive Breakpoints
+   Desktop ≥1280px  |  Tablet 768–1279px  |  Mobile <768px
+   ============================================================================= */
+
+/* ── Tablet (768px – 1279px) ─────────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1279px) {
+
+  /* Sidebar: icon-only at 81px — Figma tablet 1024px frame uses 81px sidebar */
+  .sidebar {
+    width: 81px;
+  }
+
+  .sidebar__logo {
+    justify-content: center;
+    padding: 1rem 0;
+  }
+
+  .sidebar__brand,
+  .sidebar__search,
+  .sidebar__section-label {
+    display: none;
+  }
+
+  .sidebar__nav {
+    padding: 0 0.25rem;
+  }
+
+  .sidebar__nav-item {
+    justify-content: center;
+    padding: 0.625rem 0;
+  }
+
+  .sidebar__nav-label,
+  .sidebar__nav-chevron {
+    display: none;
+  }
+
+  /* Plan grid: single column of 613px-wide cards */
+  .plan-grid {
+    grid-template-columns: 613px;
+  }
+
+  /* Narrow pg-section to match card column width */
+  .pg-section {
+    max-width: 613px;
+  }
+
+  .pg-footer {
+    max-width: 613px;
+  }
+
+  /*
+   * Card: horizontal 2-column layout at 613px × 410px
+   * Left col (info): name → desc → seats → price → CTA  (232px)
+   * Right col (table): features + addons               (232px)
+   * Gap between cols: justify-between → (565 - 232 - 232) = 101px
+   */
+  .plan-card {
+    flex-direction: row;
+    justify-content: space-between;
+    height: 410px;
+    min-height: auto;
+  }
+
+  .plan-card__info {
+    flex: 0 0 232px;
+    width: 232px;
+    height: 100%;
+  }
+
+  .plan-card__table {
+    flex: 0 0 232px;
+    width: 232px;
+    /* Fill available card height instead of fixed 348px */
+    height: 100%;
+  }
+}
+
+/* ── Mobile (<768px) ─────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* Sidebar: minimal at 41px — Figma mobile 375px frame uses 41px sidebar */
+  .sidebar {
+    width: 41px;
+  }
+
+  .sidebar__logo {
+    justify-content: center;
+    padding: 0.75rem 0;
+  }
+
+  .sidebar__brand,
+  .sidebar__search,
+  .sidebar__section-label {
+    display: none;
+  }
+
+  .sidebar__nav {
+    padding: 0;
+  }
+
+  .sidebar__nav-item {
+    justify-content: center;
+    padding: 0.5rem 0;
+    gap: 0;
+  }
+
+  .sidebar__nav-label,
+  .sidebar__nav-chevron {
+    display: none;
+  }
+
+  .sidebar__nav-icon {
+    opacity: 0.6;
+  }
+
+  /* Plan grid: single column of 280px cards — same vertical layout as desktop */
+  .plan-grid {
+    grid-template-columns: 280px;
+  }
+
+  .pg-section {
+    max-width: 280px;
+  }
+
+  .pg-footer {
+    max-width: 280px;
+  }
+
+  /* Hero text: left-align on narrow screens */
+  .pg-hero {
+    text-align: left;
+  }
+
+  .billing {
+    justify-content: flex-start;
+  }
+}

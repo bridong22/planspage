@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+---
+
+Build UI with React + Tailwind.
+Prefer reusable components over page-specific markup.
+Do not hardcode repeated values; use constants or theme tokens.
+Implement pricing data as an array of plan objects.
+Match spacing and hierarchy from the Figma design.
+Keep code simple and prototype-ready, not over-engineered.
