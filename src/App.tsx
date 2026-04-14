@@ -5,6 +5,7 @@ import { ProSeatGrid } from "./components/pricing/ProSeatGrid";
 import { StudioTierGrid } from "./components/pricing/StudioTierGrid";
 import { PricingTierCard } from "./components/pricing/PricingTierCard";
 import {
+  ENTERPRISE_PLAN,
   GROW_PLAN,
   PRO_PLAN,
   PRO_POPULAR_SEATS,
@@ -226,22 +227,25 @@ function TopBar() {
 
 /* ── Pricing Page ─────────────────────────────────────────────────────────────── */
 
-/** Default Pro seat count per billing period — "Annual5" / "Monthly15" in Figma */
-const DEFAULT_SEATS: Record<BillingPeriod, number> = {
-  yearly:  5,
-  monthly: 15,
-};
-
 function PricingPage() {
   const [billing, setBilling] = useState<BillingPeriod>("yearly");
-  const [proSeats, setProSeats] = useState(DEFAULT_SEATS.yearly);
-  const [studioTier, setStudioTier] = useState<StudioTier>(STUDIO_PLAN.defaultTier);
+  const [proSeats, setProSeats] = useState(5);
+  const [tier3Seat, setTier3Seat] = useState<StudioTier>(500);
 
-  /** Switching billing resets Pro selection to the popular pick for that period */
   function handleBillingChange(b: BillingPeriod) {
     setBilling(b);
-    setProSeats(DEFAULT_SEATS[b]);
   }
+
+  // ── Third-card (Studio Plus / Studio Max / Enterprise) — derives from seat selection ──
+  const isEnterprise = tier3Seat === "1000+";
+  const tier3Row = STUDIO_SEAT_OPTIONS.find((o) => o.seats === tier3Seat)!;
+  const tier3Price = billing === "monthly" ? tier3Row.monthly : tier3Row.yearly;
+  const tier3Name =
+    tier3Seat === 500 ? "Studio Plus" : tier3Seat === 1000 ? "Studio Max" : "Enterprise";
+  const tier3Desc = isEnterprise ? ENTERPRISE_PLAN.description : STUDIO_PLAN.description;
+  const tier3FeatureTitle = isEnterprise ? ENTERPRISE_PLAN.featureTitle : STUDIO_PLAN.featureTitle;
+  const tier3Features = isEnterprise ? ENTERPRISE_PLAN.features : STUDIO_PLAN.features;
+  const tier3Addons = isEnterprise ? ENTERPRISE_PLAN.includedAddons : STUDIO_PLAN.includedAddons;
 
   // Resolve current prices
   const growPrice = billing === "monthly" ? GROW_PLAN.monthly : GROW_PLAN.yearly;
@@ -249,9 +253,6 @@ function PricingPage() {
   const proRow = PRO_SEAT_OPTIONS.find((o) => o.seats === proSeats)!;
   const proPrice = billing === "monthly" ? proRow.monthly : proRow.yearly;
 
-  const studioRow = STUDIO_SEAT_OPTIONS.find((o) => o.seats === studioTier)!;
-  const studioPrice = billing === "monthly" ? studioRow.monthly : studioRow.yearly;
-  const isCustomStudio = studioPrice === "custom";
 
   return (
     <div className="content-scroll">
@@ -281,6 +282,7 @@ function PricingPage() {
           featureTitle={GROW_PLAN.featureTitle}
           features={GROW_PLAN.features}
           optionalAddons={GROW_PLAN.optionalAddons}
+          addonTooltips={GROW_PLAN.addonTooltips}
         />
 
         {/* Pro */}
@@ -295,27 +297,27 @@ function PricingPage() {
           featureTitle={PRO_PLAN.featureTitle}
           features={PRO_PLAN.features}
           optionalAddons={PRO_PLAN.optionalAddons}
+          addonTooltips={PRO_PLAN.addonTooltips}
           mostPopular={proSeats === PRO_POPULAR_SEATS || proSeats === PRO_POPULAR_SEATS_MONTHLY}
         />
 
-        {/* Studio Plus */}
+        {/* Studio Plus / Studio Max / Enterprise — morphs based on seat selection */}
         <PricingTierCard
-          name="Studio Plus"
-          description={STUDIO_PLAN.description}
+          name={tier3Name}
+          description={tier3Desc}
           seatControl={
-            <StudioTierGrid value={studioTier} onChange={setStudioTier} />
+            <StudioTierGrid value={tier3Seat} onChange={setTier3Seat} />
           }
-          price={studioPrice}
-          priceNote={
-            isCustomStudio
-              ? "Contact us for 5+ location pricing"
-              : "per location (1–4 locations)"
-          }
+          price={isEnterprise ? "custom" : tier3Price}
+          priceNote={isEnterprise ? "(5+ Locations)" : "per location (1–4 locations)"}
           onSelect={() => {}}
-          featureTitle={STUDIO_PLAN.featureTitle}
-          features={STUDIO_PLAN.features}
-          includedAddons={STUDIO_PLAN.includedAddons}
-          showSaveBadge={!isCustomStudio}
+          ctaLabel={isEnterprise ? "CONTACT US" : "SELECT"}
+          featureTitle={tier3FeatureTitle}
+          features={tier3Features}
+          includedAddons={tier3Addons}
+          includedAddonTooltips={isEnterprise ? ENTERPRISE_PLAN.includedAddonTooltips : STUDIO_PLAN.includedAddonTooltips}
+          showSaveBadge
+          noIconAddons={isEnterprise ? new Set(["Custom Branded App (Enterprise)"]) : undefined}
         />
       </div>
 

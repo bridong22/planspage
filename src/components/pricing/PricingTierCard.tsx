@@ -1,7 +1,5 @@
 import type { ReactNode } from "react";
-import type { Price } from "../../data/pricingPlans";
-
-type FeatureItem = { label: string; info?: boolean };
+import type { FeatureItem, Price } from "../../data/pricingPlans";
 
 type Props = {
   name: string;
@@ -11,22 +9,41 @@ type Props = {
   price: Price;
   priceNote?: string;
   onSelect: () => void;
+  /** CTA button label — defaults to "SELECT" */
+  ctaLabel?: string;
   featureTitle: string;
   features: readonly FeatureItem[];
   /** Optional addons for Grow / Pro (plain text list) */
   optionalAddons?: readonly string[];
-  /** Included addons for Studio (yellow panel with checkmarks) */
+  /** Tooltip copy keyed by add-on label (Grow card) */
+  addonTooltips?: Record<string, string>;
+  /** Included addons for Studio / Enterprise (yellow panel with checkmarks) */
   includedAddons?: readonly string[];
   /** Show "SAVE $500+ annually" badge on the Studio panel */
   showSaveBadge?: boolean;
   /** Pro + Annual + 5-seats → MOST POPULAR ribbon + yellow border */
   mostPopular?: boolean;
+  /** Tooltip copy keyed by included-addon label (Studio card) */
+  includedAddonTooltips?: Record<string, string>;
+  /** Set of included-addon labels that should render with no icon (e.g. CBA on Enterprise) */
+  noIconAddons?: ReadonlySet<string>;
 };
 
+/** Plain info icon — no tooltip copy available */
 function InfoIcon() {
   return (
-    <span className="plan-card__info-icon" aria-hidden title="More info">
+    <span className="plan-card__info-icon" aria-hidden>
       i
+    </span>
+  );
+}
+
+/** Info icon with hover tooltip bubble — shown when tooltip copy is provided */
+function TooltipIcon({ text }: { text: string }) {
+  return (
+    <span className="tooltip-wrap">
+      <span className="plan-card__info-icon" aria-label={text}>i</span>
+      <span className="tooltip-bubble" role="tooltip">{text}</span>
     </span>
   );
 }
@@ -42,12 +59,16 @@ export function PricingTierCard({
   price,
   priceNote,
   onSelect,
+  ctaLabel = "SELECT",
   featureTitle,
   features,
   optionalAddons,
+  addonTooltips,
   includedAddons,
+  includedAddonTooltips,
   showSaveBadge = false,
   mostPopular = false,
+  noIconAddons,
 }: Props) {
   const isCustom = price === "custom";
 
@@ -68,11 +89,17 @@ export function PricingTierCard({
         {/* Seat control renders its own .plan-card__seat-section wrapper */}
         {seatControl}
 
-        {/* Price — note stacks inside suffix column to avoid adding height */}
+        {/* Price — for custom plans show priceNote inline; otherwise show /mo + note */}
         <div className="plan-card__price-block">
           <div className="plan-card__price">
             <span className="plan-card__price-num">{formatPrice(price)}</span>
-            {!isCustom && (
+            {isCustom ? (
+              priceNote && (
+                <span className="plan-card__price-suffix plan-card__price-suffix--inline">
+                  {priceNote}
+                </span>
+              )
+            ) : (
               <span className="plan-card__price-suffix">
                 <span>/ mo</span>
                 {priceNote && (
@@ -84,7 +111,7 @@ export function PricingTierCard({
         </div>
 
         <button type="button" className="plan-card__cta" onClick={onSelect}>
-          SELECT
+          {ctaLabel}
         </button>
       </div>
 
@@ -98,46 +125,54 @@ export function PricingTierCard({
               <li key={f.label} className="plan-card__feature-item">
                 <span className="plan-card__check" aria-hidden>✓</span>
                 {f.label}
-                {f.info && <InfoIcon />}
+                {f.info && (f.tooltip ? <TooltipIcon text={f.tooltip} /> : <InfoIcon />)}
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Optional add-ons (Grow / Pro) */}
+        {/* Optional add-ons (Grow / Pro) — fixed-height section so the header
+            always starts at the same Y as "ADD-ONS INCLUDED" on the Studio card */}
         {optionalAddons && optionalAddons.length > 0 && (
-          <div>
+          <div className="plan-card__addons-section">
             <p className="plan-card__addons-title">
               Optional add-ons available for purchase
             </p>
-            {optionalAddons.map((addon) => (
-              <div key={addon} className="plan-card__addon-item">
-                {addon}
-                <InfoIcon />
-              </div>
-            ))}
+            {optionalAddons.map((addon) => {
+              const tip = addonTooltips?.[addon];
+              return (
+                <div key={addon} className="plan-card__addon-item">
+                  {addon}
+                  {tip ? <TooltipIcon text={tip} /> : <InfoIcon />}
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* Included add-ons (Studio) — yellow panel */}
+        {/* Included add-ons (Studio / Enterprise) — yellow panel with fixed-height
+            section matching .plan-card__addons-section (168px) for cross-card alignment */}
         {includedAddons && includedAddons.length > 0 && (
           <div className="plan-card__included">
-            {/* Save badge floats above the panel at top-right, matching Figma */}
             {showSaveBadge && (
               <span className="plan-card__included-badge">
                 SAVE $500+ annually
               </span>
             )}
             <div className="plan-card__included-inner">
-              <p className="plan-card__included-title">Add-ons included</p>
+              <p className="plan-card__included-title">ADD-ONS INCLUDED</p>
               <ul className="plan-card__feature-list">
-                {includedAddons.map((addon) => (
-                  <li key={addon} className="plan-card__feature-item">
-                    <span className="plan-card__check" aria-hidden>✓</span>
-                    {addon}
-                    <InfoIcon />
-                  </li>
-                ))}
+                {includedAddons.map((addon) => {
+                  const tip = includedAddonTooltips?.[addon];
+                  const showIcon = !noIconAddons?.has(addon);
+                  return (
+                    <li key={addon} className="plan-card__feature-item">
+                      <span className="plan-card__check" aria-hidden>✓</span>
+                      {addon}
+                      {showIcon && (tip ? <TooltipIcon text={tip} /> : <InfoIcon />)}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </div>

@@ -1,6 +1,13 @@
 export type BillingPeriod = "monthly" | "yearly";
 export type Price = number | "custom";
 
+/** Feature row — info:true shows the tooltip icon, tooltip holds the hover copy */
+export type FeatureItem = {
+  label: string;
+  info?: boolean;
+  tooltip?: string;
+};
+
 // ── Grow ─────────────────────────────────────────────────────────────────────
 export const GROW_PLAN = {
   id: "grow" as const,
@@ -13,18 +20,38 @@ export const GROW_PLAN = {
   featureTitle: "Included in Grow Plan:",
   features: [
     { label: "Custom client programs" },
-    { label: "Client meal and macro tracking",      info: true },
+    {
+      label: "Client meal and macro tracking",
+      info: true,
+      tooltip:
+        "Clients track meals, calories, and macros, plus receive nutrition guidance.",
+    },
     { label: "Habit streaks and badges" },
-    { label: "Trainerize.me website profile",       info: true },
+    {
+      label: "Trainerize.me website profile",
+      info: true,
+      tooltip:
+        "Your unique online profile to market your business and let potential clients know about you, your experience, services, certifications, and more.",
+    },
     { label: "Basic in-app messaging features" },
-  ],
+  ] satisfies FeatureItem[],
   optionalAddons: [
     "Advanced Nutrition Coaching",
     "Business",
     "Video Coaching",
     "Stripe Integrated Payments",
-    "Custom Branded App (Grow)",
   ],
+  /** Tooltip copy for optional add-ons — keyed by add-on label */
+  addonTooltips: {
+    "Advanced Nutrition Coaching":
+      "Deliver personalized meal plans and nutrition guidance at scale.",
+    "Business":
+      "Attract clients, manage bookings, and get paid all in one place.",
+    "Video Coaching":
+      "Coach clients live or on demand through in-app video sessions and classes.",
+    "Stripe Integrated Payments":
+      "Accept payments, manage subscriptions, and automate payouts directly in the app.",
+  } as Record<string, string>,
 };
 
 // ── Pro ──────────────────────────────────────────────────────────────────────
@@ -35,13 +62,13 @@ export type ProSeatOption = {
 };
 
 export const PRO_SEAT_OPTIONS: readonly ProSeatOption[] = [
-  { seats: 5,   monthly: 22,  yearly: 19.8  },
-  { seats: 15,  monthly: 45,  yearly: 40.5  },
-  { seats: 30,  monthly: 70,  yearly: 63    },
-  { seats: 50,  monthly: 120, yearly: 108   },
-  { seats: 75,  monthly: 165, yearly: 148.5 },
-  { seats: 100, monthly: 200, yearly: 180   },
-  { seats: 200, monthly: 225, yearly: 202.5 },
+  { seats: 5,   monthly: 25,  yearly: 23    },
+  { seats: 15,  monthly: 50,  yearly: 45    },
+  { seats: 30,  monthly: 79,  yearly: 71    },
+  { seats: 50,  monthly: 135, yearly: 122   },
+  { seats: 75,  monthly: 180, yearly: 162   },
+  { seats: 100, monthly: 225, yearly: 203   },
+  { seats: 200, monthly: 250, yearly: 225   },
 ];
 
 /** Seat count that shows "MOST POPULAR" ribbon per billing period. */
@@ -68,6 +95,18 @@ export const PRO_PLAN = {
     "Stripe Integrated Payments",
     "Custom Branded App (Pro)",
   ],
+  addonTooltips: {
+    "Advanced Nutrition Coaching":
+      "Deliver personalized meal plans and nutrition guidance at scale.",
+    "Business":
+      "Attract clients, manage bookings, and get paid all in one place",
+    "Video Coaching":
+      "Coach clients live or on demand through in-app video sessions and classes.",
+    "Stripe Integrated Payments":
+      "Accept payments, manage subscriptions, and automate payouts directly in the app.",
+    "Custom Branded App (Pro)":
+      "Make your app your own with a custom iOS icon, themed navigation, and a personalized welcome video.",
+  } as Record<string, string>,
 };
 
 // ── Studio Plus ───────────────────────────────────────────────────────────────
@@ -80,8 +119,8 @@ export type StudioSeatOption = {
 };
 
 export const STUDIO_SEAT_OPTIONS: readonly StudioSeatOption[] = [
-  { seats: 500,     monthly: 250,      yearly: 225      },
-  { seats: 1000,    monthly: 350,      yearly: 315      },
+  { seats: 500,     monthly: 275,      yearly: 248      },
+  { seats: 1000,    monthly: 380,      yearly: 342      },
   { seats: "1000+", monthly: "custom", yearly: "custom" },
 ];
 
@@ -93,12 +132,12 @@ export const STUDIO_PLAN = {
     "For growing and established coaches. Simplify scheduling, communication, and client management to deliver high-quality programs as your business grows.",
   featureTitle: "Includes everything in Pro, plus:",
   features: [
-    { label: "1-1 group video calls",              info: true },
-    { label: "Custom recipes and meals" },
-    { label: "Referral links and prospect booking", info: true },
-    { label: "Access to partner add-ons",           info: true },
-    { label: "Personalized onboarding support",     info: true },
-    { label: "Full API access and support",         info: true },
+    { label: "1-1 group video calls",              info: true, tooltip: "Meet with clients live through one-on-one or group video sessions" },
+    { label: "Custom recipes and meals",            info: true, tooltip: "Build custom meals and recipes tailored to your clients' needs" },
+    { label: "Referral links and prospect booking", info: true, tooltip: "Create, personalize and manage booking pages and empower clients to share your business with their network." },
+    { label: "Access to partner add-ons" },
+    { label: "Personalized onboarding support",    info: true, tooltip: "Get guided setup and training to launch your app and workflows with confidence." },
+    { label: "Full API access and support",         info: true, tooltip: "Make Trainerize do more for you and your business with access to our suite of APIs and webhooks." },
   ],
   includedAddons: [
     "Advanced Nutrition Coaching",
@@ -107,6 +146,53 @@ export const STUDIO_PLAN = {
     "Stripe Integrated Payments",
     "Custom Branded App (Studio)",
   ],
+  includedAddonTooltips: {
+    "Advanced Nutrition Coaching":
+      "Deliver personalized meal plans and nutrition guidance at scale.",
+    "Business":
+      "Attract clients, manage bookings, and get paid all in one place",
+    "Video Coaching":
+      "Coach clients live or on demand through in-app video sessions and classes.",
+    "Stripe Integrated Payments":
+      "Accept payments, manage subscriptions, and automate payouts directly in the app.",
+    "Custom Branded App (Studio)":
+      "Your own fully branded client app for iOS and Android. Available for registered businesses (LLC, Corp.) with an Apple Developer Account.",
+  } as Record<string, string>,
+};
+
+// ── Enterprise ────────────────────────────────────────────────────────────────
+export const ENTERPRISE_PLAN = {
+  id: "enterprise" as const,
+  name: "Enterprise",
+  defaultTier: "1000+" as StudioTier,
+  description:
+    "For studios, gyms, and fitness professionals looking for comprehensive coaching solution. Unlock premium add-ons and customizations at no extra charge.",
+  featureTitle: "Includes everything in Studio, plus:",
+  features: [
+    { label: "Separate app store listing",               info: true, tooltip: "Your Enterprise-level custom branded app comes with individual app store listings–perfect for creating a fully branded experience for clients and members." },
+    { label: "8 week valet premium onboarding",          info: true, tooltip: "A dedicated implementation specialist will guide you and your team in the initial weeks with set up and onboarding." },
+    { label: "Dedicated account manager",                info: true, tooltip: "A dedicated account manager will support and guide you and your team to ensure you have everything you need to be successful with Trainerize." },
+    { label: "Access to app usage analytics",            info: true, tooltip: "Dive deep into how members are engaging with your app with access to insights and analytics." },
+    { label: "HQ/Franchise programming content control", info: true, tooltip: "Manage programming and content distribution across multiple connected accounts. Great for franchise and licensee businesses that want to standardize programming." },
+    { label: "SSO sign-in",                              info: true, tooltip: "With single sign on, allow members to quickly and easily sign into the app using an existing member account." },
+  ] satisfies FeatureItem[],
+  includedAddons: [
+    "Advanced Nutrition Coaching",
+    "Business",
+    "Video Coaching",
+    "Stripe Integrated Payments",
+    "Custom Branded App (Enterprise)",
+  ],
+  includedAddonTooltips: {
+    "Advanced Nutrition Coaching":
+      "Deliver personalized meal plans and nutrition guidance at scale.",
+    "Business":
+      "Attract clients, manage bookings, and get paid all in one place",
+    "Video Coaching":
+      "Coach clients live or on demand through in-app video sessions and classes.",
+    "Stripe Integrated Payments":
+      "Accept payments, manage subscriptions, and automate payouts directly in the app.",
+  } as Record<string, string>,
 };
 
 // ── helpers ───────────────────────────────────────────────────────────────────

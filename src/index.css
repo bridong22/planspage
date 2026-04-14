@@ -474,9 +474,8 @@ button {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  /* Figma card total height = 758px; inner = 758 - 48px padding = 710px */
-  min-height: 710px;
+  /* Fixed height — prevents cards from shrinking/growing when content changes (e.g. Enterprise switch) */
+  height: 758px;
 }
 
 /* Pro "MOST POPULAR" state: yellow border */
@@ -503,16 +502,20 @@ button {
 /* ── Card Info section (name → CTA) ────────────────────────────────────────── */
 
 /*
- * Figma: info section fills the space above the fixed 348px table.
- * With 710px inner height → info = 710 - 348 = 362px.
- * flex: 1 + flex-col lets desc grow to absorb variable text length,
- * keeping seat / price / CTA at the same Y across all three cards.
+ * Figma: info section is EXACTLY 362px on every card.
+ * (758px card − 48px padding − 348px table = 362px)
+ * The Figma annotates h-[362px] explicitly on Studio Plus to lock this in.
+ * Using a hard-coded height (not flex:1) prevents any browser flex-rounding
+ * from producing a different size on the third card vs the first two.
  */
 .plan-card__info {
-  flex: 1;
+  height: 362px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   padding-bottom: 16px;
+  /* overflow-y is handled per-child: .plan-card__desc has overflow:hidden to
+     clip long descriptions without touching the horizontal axis */
 }
 
 /* Figma: bold 16px / 24px, #241f20 */
@@ -527,21 +530,26 @@ button {
 
 /*
  * Figma: regular 14px / 20px, #6d6a6a, pt-8.
- * flex: 1 causes this to absorb any extra height so that seat / price / CTA
- * always land at the same position regardless of description word count.
+ * flex: 1 absorbs all surplus height in the info column so that the seat
+ * selector, price, and CTA always land at the same Y across all three cards.
+ * overflow: hidden prevents long text from pushing sibling elements down.
  */
 .plan-card__desc {
   flex: 1;
+  min-height: 0;
   margin: 0;
   padding-top: 8px;
+  padding-bottom: 16px;
   font-size: 14px;
   line-height: 20px;
   color: var(--ds-color-text-muted);
+  overflow: hidden;
 }
 
 /* Seat selector wrapper — Figma: h-116px, pb-16px, flex-col, gap-8px */
 .plan-card__seat-section {
   height: 116px;
+  flex-shrink: 0;
   padding-bottom: 16px;
   display: flex;
   flex-direction: column;
@@ -628,13 +636,21 @@ button {
 
 /* Price block — Figma: gap-8px, pb-12px */
 .plan-card__price-block {
+  flex-shrink: 0;
   padding-bottom: 12px;
 }
 
+/*
+ * Price ROW is locked to exactly 40px (= line-height of the 28px price number).
+ * height + overflow:hidden prevents a wrapping suffix from expanding the row
+ * and shifting the seat selector up on the Studio Plus/Max card.
+ */
 .plan-card__price {
   display: flex;
   align-items: center;
   gap: 8px;
+  height: 40px;
+  overflow: hidden;
 }
 
 /* Figma: bold 28px / 40px */
@@ -662,15 +678,25 @@ button {
   color: var(--ds-color-text-muted);
 }
 
-/* Second line in suffix — same size, no extra bottom spacing */
+/* Inline variant for custom-price plans — "(5+ Locations)" sits beside "Custom" */
+.plan-card__price-suffix--inline {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ds-color-text-muted);
+}
+
+/* Second line in suffix — white-space: nowrap prevents this from wrapping
+   and expanding the price row beyond 40px on narrower cards */
 .plan-card__price-note {
   font-size: 11px;
   line-height: 14px;
+  white-space: nowrap;
   color: var(--ds-color-text-muted);
 }
 
 /* CTA button — Figma: bg #4094f7, h-30px, semibold 14px, tracking -0.006em, rounded-4 */
 .plan-card__cta {
+  flex-shrink: 0;
   width: 100%;
   height: 30px;
   background: var(--ds-color-brand-blue);
@@ -765,6 +791,18 @@ button {
   cursor: default;
 }
 
+/*
+ * Addons section wrapper (both optional and included panels).
+ * Fixed 168px = height of the tallest variant (Studio/Enterprise yellow panel).
+ * Ensures all three "Optional add-ons / ADD-ONS INCLUDED" headers start at
+ * the same Y = 348 - 168 = 180px from the top of the table.
+ * flex-shrink: 0 prevents the table's justify-between from compressing it.
+ */
+.plan-card__addons-section {
+  flex-shrink: 0;
+  min-height: 168px;
+}
+
 /* Optional addons section (Grow / Pro) */
 /* Figma: bold 12px / 16px, #241f20 — DARK not muted */
 .plan-card__addons-title {
@@ -792,8 +830,14 @@ button {
 
 /* ── Studio "ADD-ONS INCLUDED" yellow panel ────────────────────────────────── */
 
-/* position:relative so the save badge can float above the panel */
+/*
+ * position:relative so the save badge can float above the panel.
+ * min-height 168px aligns this panel's top with .plan-card__addons-section
+ * so "ADD-ONS INCLUDED" always starts at the same Y as "Optional add-ons".
+ */
 .plan-card__included {
+  flex-shrink: 0;
+  min-height: 168px;
   position: relative;
   padding-top: 12px;
 }
@@ -865,6 +909,45 @@ button {
   color: var(--ds-color-neutral-300);
 }
 
+/* ── Tooltip ───────────────────────────────────────────────────────────────── */
+
+/* Wrapper sits inline next to the info icon */
+.tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/*
+ * Figma: white bg, rounded-5, p-10, shadow 0 2px 10px rgba(118,118,118,0.1)
+ * 220px wide, body-tiny 12px/16px, #241f20
+ * Appears to the right of the icon; z-index above card border
+ */
+.tooltip-bubble {
+  display: none;
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 220px;
+  background: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(118, 118, 118, 0.2);
+  padding: 10px;
+  font-size: 12px;
+  line-height: 16px;
+  color: #241f20;
+  white-space: normal;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.tooltip-wrap:hover .tooltip-bubble,
+.tooltip-wrap:focus-within .tooltip-bubble {
+  display: block;
+}
+
 /* =============================================================================
    Responsive Breakpoints
    Desktop ≥1280px  |  Tablet 768–1279px  |  Mobile <768px
@@ -927,7 +1010,6 @@ button {
     flex-direction: row;
     justify-content: space-between;
     height: 410px;
-    min-height: auto;
   }
 
   .plan-card__info {
