@@ -474,8 +474,10 @@ button {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  /* Fixed height — prevents cards from shrinking/growing when content changes (e.g. Enterprise switch) */
-  height: 758px;
+  /* min-height instead of height — lets the card grow if feature text wraps,
+     preventing any content from being clipped. CSS grid stretches all row
+     siblings to the same height so cross-card alignment is preserved. */
+  min-height: 758px;
 }
 
 /* Pro "MOST POPULAR" state: yellow border */
@@ -561,9 +563,10 @@ button {
   justify-content: flex-start;
 }
 
-/* Pro / Studio: items centered */
+/* Pro / Studio: items start at top, matching Grow's flex-start so all
+   seat-section labels sit on the same Y across all three cards */
 .plan-card__seat-section--center {
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 /* Figma: bold 14px / 20px, #241f20 */
@@ -718,13 +721,13 @@ button {
 /* ── Card Table section (features + addons) ────────────────────────────────── */
 
 /*
- * Figma: h-[348px] fixed. Features section is flex:1 so it expands to fill
- * all available space — this pins the addons section to the same Y position
- * across all three cards regardless of how many features each plan has.
+ * Figma: h-[348px] target. flex:1 lets the table absorb all remaining card
+ * height so the card never clips content when feature text wraps. min-height
+ * keeps the Figma proportions when content is shorter than 348px.
  */
 .plan-card__table {
-  height: 348px;
-  flex-shrink: 0;
+  flex: 1;
+  min-height: 348px;
   display: flex;
   flex-direction: column;
 }
@@ -1010,6 +1013,8 @@ button {
     flex-direction: row;
     justify-content: space-between;
     height: 410px;
+    /* Reset desktop min-height so height: 410px is the governing dimension */
+    min-height: unset;
   }
 
   .plan-card__info {
@@ -1021,8 +1026,10 @@ button {
   .plan-card__table {
     flex: 0 0 232px;
     width: 232px;
-    /* Fill available card height instead of fixed 348px */
+    /* Fill available card height instead of fixed 348px;
+       reset desktop min-height so height:100% governs */
     height: 100%;
+    min-height: unset;
   }
 }
 
