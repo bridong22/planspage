@@ -4,6 +4,7 @@ import { GrowSeatDisplay } from "./components/pricing/GrowSeatStepper";
 import { ProSeatGrid } from "./components/pricing/ProSeatGrid";
 import { StudioTierGrid } from "./components/pricing/StudioTierGrid";
 import { PricingTierCard } from "./components/pricing/PricingTierCard";
+import { OverviewPage } from "./components/overview/OverviewPage";
 import {
   ENTERPRISE_PLAN,
   GROW_PLAN,
@@ -16,6 +17,10 @@ import {
   type BillingPeriod,
   type StudioTier,
 } from "./data/pricingPlans";
+
+/* ── Page type ────────────────────────────────────────────────────────────── */
+
+type Page = "overview" | "pricing";
 
 /* ── SVG icons ─────────────────────────────────────────────────────────────── */
 
@@ -134,6 +139,15 @@ function IconBell() {
     </svg>
   );
 }
+function IconHelp() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
 function IconSearch() {
   return (
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -150,11 +164,25 @@ function IconArrowLeft() {
     </svg>
   );
 }
+function IconSparkle() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z" />
+    </svg>
+  );
+}
 
-/* ── Sidebar ────────────────────────────────────────────────────────────────── */
+/* ── Nav config ────────────────────────────────────────────────────────────── */
 
-const MAIN_NAV = [
-  { label: "Overview",    Icon: IconHome },
+type NavItem = {
+  label: string;
+  Icon: () => JSX.Element;
+  chevron?: boolean;
+  page?: Page;
+};
+
+const MAIN_NAV: NavItem[] = [
+  { label: "Overview",    Icon: IconHome,       page: "overview" },
   { label: "Messages",    Icon: IconMessages },
   { label: "Groups",      Icon: IconGroups },
   { label: "Challenges",  Icon: IconChallenges },
@@ -165,13 +193,21 @@ const MAIN_NAV = [
   { label: "Scheduling",  Icon: IconScheduling, chevron: true },
 ];
 
-const OTHER_NAV = [
+const OTHER_NAV: NavItem[] = [
   { label: "Setup Guide", Icon: IconSetup },
-  { label: "Add-ons",     Icon: IconAddons },
+  { label: "Add-ons",     Icon: IconAddons,    page: "pricing" },
   { label: "Settings",    Icon: IconSetup },
 ];
 
-function Sidebar() {
+/* ── Sidebar ────────────────────────────────────────────────────────────────── */
+
+function Sidebar({
+  activePage,
+  onNavigate,
+}: {
+  activePage: Page;
+  onNavigate: (p: Page) => void;
+}) {
   return (
     <nav className="sidebar" aria-label="Main navigation">
       <div className="sidebar__logo">
@@ -186,8 +222,12 @@ function Sidebar() {
 
       <p className="sidebar__section-label">Main Menu</p>
       <ul className="sidebar__nav">
-        {MAIN_NAV.map(({ label, Icon, chevron }) => (
-          <li key={label} className="sidebar__nav-item">
+        {MAIN_NAV.map(({ label, Icon, chevron, page }) => (
+          <li
+            key={label}
+            className={`sidebar__nav-item${page === activePage ? " sidebar__nav-item--active" : ""}`}
+            onClick={() => page && onNavigate(page)}
+          >
             <span className="sidebar__nav-icon"><Icon /></span>
             <span className="sidebar__nav-label">{label}</span>
             {chevron && <span className="sidebar__nav-chevron"><IconChevronRight /></span>}
@@ -197,8 +237,12 @@ function Sidebar() {
 
       <p className="sidebar__section-label">Other</p>
       <ul className="sidebar__nav">
-        {OTHER_NAV.map(({ label, Icon }) => (
-          <li key={label} className="sidebar__nav-item">
+        {OTHER_NAV.map(({ label, Icon, page }) => (
+          <li
+            key={label}
+            className={`sidebar__nav-item${page === activePage ? " sidebar__nav-item--active" : ""}`}
+            onClick={() => page && onNavigate(page)}
+          >
             <span className="sidebar__nav-icon"><Icon /></span>
             <span className="sidebar__nav-label">{label}</span>
           </li>
@@ -210,33 +254,48 @@ function Sidebar() {
 
 /* ── Top Bar ─────────────────────────────────────────────────────────────────── */
 
-function TopBar() {
+function TopBar({ onUpgrade }: { onUpgrade: () => void }) {
   return (
     <header className="topbar">
-      <button type="button" className="topbar__bell" aria-label="Notifications">
-        <IconBell />
-      </button>
-      <button type="button" className="topbar__user" aria-label="User menu">
-        <span className="topbar__avatar">TO</span>
-        <span className="topbar__username">Trainer O.</span>
-        <span className="topbar__chevron"><IconChevronDown /></span>
-      </button>
+      <div className="topbar__left">
+        <span className="topbar__plan-text">
+          Your Free plan has limited client seats and features. Upgrade today to unlock more.
+        </span>
+        <button type="button" className="topbar__upgrade-btn" onClick={onUpgrade}>
+          UPGRADE PLAN
+        </button>
+      </div>
+      <div className="topbar__right">
+        <button type="button" className="topbar__ai-btn" aria-label="AI Builder">
+          <IconSparkle />
+          AI BUILDER
+        </button>
+        <button type="button" className="topbar__add-btn" aria-label="Add new">
+          +
+        </button>
+        <button type="button" className="topbar__icon-btn" aria-label="Notifications">
+          <IconBell />
+        </button>
+        <button type="button" className="topbar__icon-btn" aria-label="Help">
+          <IconHelp />
+        </button>
+        <button type="button" className="topbar__user" aria-label="User menu">
+          <span className="topbar__avatar">TO</span>
+          <span className="topbar__username">Trainer O.</span>
+          <span className="topbar__chevron"><IconChevronDown /></span>
+        </button>
+      </div>
     </header>
   );
 }
 
 /* ── Pricing Page ─────────────────────────────────────────────────────────────── */
 
-function PricingPage() {
+function PricingPage({ onBack }: { onBack: () => void }) {
   const [billing, setBilling] = useState<BillingPeriod>("yearly");
   const [proSeats, setProSeats] = useState(5);
   const [tier3Seat, setTier3Seat] = useState<StudioTier>(500);
 
-  function handleBillingChange(b: BillingPeriod) {
-    setBilling(b);
-  }
-
-  // ── Third-card (Studio Plus / Studio Max / Enterprise) — derives from seat selection ──
   const isEnterprise = tier3Seat === "1000+";
   const tier3Row = STUDIO_SEAT_OPTIONS.find((o) => o.seats === tier3Seat)!;
   const tier3Price = billing === "monthly" ? tier3Row.monthly : tier3Row.yearly;
@@ -247,18 +306,14 @@ function PricingPage() {
   const tier3Features = isEnterprise ? ENTERPRISE_PLAN.features : STUDIO_PLAN.features;
   const tier3Addons = isEnterprise ? ENTERPRISE_PLAN.includedAddons : STUDIO_PLAN.includedAddons;
 
-  // Resolve current prices
   const growPrice = billing === "monthly" ? GROW_PLAN.monthly : GROW_PLAN.yearly;
-
   const proRow = PRO_SEAT_OPTIONS.find((o) => o.seats === proSeats)!;
   const proPrice = billing === "monthly" ? proRow.monthly : proRow.yearly;
 
-
   return (
     <div className="content-scroll">
-      {/* Back + Hero — contained in a centered max-width section */}
       <div className="pg-section">
-        <button type="button" className="pg-back" onClick={() => {}}>
+        <button type="button" className="pg-back" onClick={onBack}>
           <IconArrowLeft /> Back
         </button>
         <div className="pg-hero">
@@ -266,13 +321,11 @@ function PricingPage() {
             Plans designed for every business size and type.
           </h1>
           <p className="pg-hero__sub">Select a plan best suited for you business</p>
-          <BillingToggle billing={billing} onChange={handleBillingChange} />
+          <BillingToggle billing={billing} onChange={setBilling} />
         </div>
       </div>
 
-      {/* Cards */}
       <div className="plan-grid">
-        {/* Grow */}
         <PricingTierCard
           name="Grow"
           description={GROW_PLAN.description}
@@ -285,13 +338,10 @@ function PricingPage() {
           addonTooltips={GROW_PLAN.addonTooltips}
         />
 
-        {/* Pro */}
         <PricingTierCard
           name={`Pro ${proSeats}`}
           description={PRO_PLAN.description}
-          seatControl={
-            <ProSeatGrid value={proSeats} onChange={setProSeats} />
-          }
+          seatControl={<ProSeatGrid value={proSeats} onChange={setProSeats} />}
           price={proPrice}
           onSelect={() => {}}
           featureTitle={PRO_PLAN.featureTitle}
@@ -301,13 +351,10 @@ function PricingPage() {
           mostPopular={proSeats === PRO_POPULAR_SEATS || proSeats === PRO_POPULAR_SEATS_MONTHLY}
         />
 
-        {/* Studio Plus / Studio Max / Enterprise — morphs based on seat selection */}
         <PricingTierCard
           name={tier3Name}
           description={tier3Desc}
-          seatControl={
-            <StudioTierGrid value={tier3Seat} onChange={setTier3Seat} />
-          }
+          seatControl={<StudioTierGrid value={tier3Seat} onChange={setTier3Seat} />}
           price={isEnterprise ? "custom" : tier3Price}
           priceNote={isEnterprise ? "(5+ Locations)" : "per location (1–4 locations)"}
           onSelect={() => {}}
@@ -315,13 +362,18 @@ function PricingPage() {
           featureTitle={tier3FeatureTitle}
           features={tier3Features}
           includedAddons={tier3Addons}
-          includedAddonTooltips={isEnterprise ? ENTERPRISE_PLAN.includedAddonTooltips : STUDIO_PLAN.includedAddonTooltips}
+          includedAddonTooltips={
+            isEnterprise
+              ? ENTERPRISE_PLAN.includedAddonTooltips
+              : STUDIO_PLAN.includedAddonTooltips
+          }
           showSaveBadge
-          noIconAddons={isEnterprise ? new Set(["Custom Branded App (Enterprise)"]) : undefined}
+          noIconAddons={
+            isEnterprise ? new Set(["Custom Branded App (Enterprise)"]) : undefined
+          }
         />
       </div>
 
-      {/* Footer */}
       <div className="pg-footer">
         <a className="pg-footer__link" href="#compare">
           Compare all plans and features
@@ -340,12 +392,18 @@ function PricingPage() {
 /* ── App Root ─────────────────────────────────────────────────────────────────── */
 
 export default function App() {
+  const [activePage, setActivePage] = useState<Page>("overview");
+
   return (
     <div className="app">
-      <Sidebar />
+      <Sidebar activePage={activePage} onNavigate={setActivePage} />
       <div className="main-column">
-        <TopBar />
-        <PricingPage />
+        <TopBar onUpgrade={() => setActivePage("pricing")} />
+        {activePage === "overview" ? (
+          <OverviewPage onUpgrade={() => setActivePage("pricing")} />
+        ) : (
+          <PricingPage onBack={() => setActivePage("overview")} />
+        )}
       </div>
     </div>
   );
