@@ -5,248 +5,152 @@ import { ProSeatGrid } from "./components/pricing/ProSeatGrid";
 import { StudioTierGrid } from "./components/pricing/StudioTierGrid";
 import { PricingTierCard } from "./components/pricing/PricingTierCard";
 import { OverviewPage } from "./components/overview/OverviewPage";
+import { BillingPage } from "./components/billing/BillingPage";
+import { UpgradeAddOnsModal } from "./components/billing/UpgradeAddOnsModal";
+import { CheckoutModal } from "./components/billing/CheckoutModal";
+import { ConfirmationDialog } from "./components/billing/ConfirmationDialog";
+import { AddonsPage } from "./components/addons/AddonsPage";
+import { ProductTour } from "./components/tour/ProductTour";
 import {
-  ENTERPRISE_PLAN,
-  GROW_PLAN,
-  PRO_PLAN,
-  PRO_POPULAR_SEATS,
-  PRO_POPULAR_SEATS_MONTHLY,
-  PRO_SEAT_OPTIONS,
-  STUDIO_PLAN,
-  STUDIO_SEAT_OPTIONS,
-  type BillingPeriod,
-  type StudioTier,
+  ENTERPRISE_PLAN, GROW_PLAN, PRO_PLAN, PRO_POPULAR_SEATS, PRO_POPULAR_SEATS_MONTHLY,
+  PRO_SEAT_OPTIONS, STUDIO_PLAN, STUDIO_SEAT_OPTIONS,
+  type BillingPeriod, type StudioTier,
 } from "./data/pricingPlans";
 
-/* ── Page type ────────────────────────────────────────────────────────────── */
+/* ── Page + upgrade flow types ─────────────────────────────────────────────── */
 
-type Page = "overview" | "pricing";
+type Page = "overview" | "pricing" | "billing" | "addons";
 
-/* ── SVG icons ─────────────────────────────────────────────────────────────── */
+type UpgradeCtx =
+  | null
+  | { step: "addons";    planName: string; planPrice: number; selectedAddons: Set<string> }
+  | { step: "checkout";  planName: string; planPrice: number; selectedAddons: Set<string> }
+  | { step: "success";   planName: string };
 
-function IconHome() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" />
-      <polyline points="9 21 9 12 15 12 15 21" />
-    </svg>
-  );
-}
-function IconMessages() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-    </svg>
-  );
-}
-function IconGroups() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="9" cy="7" r="4" />
-      <path d="M3 20v-2a4 4 0 014-4h4a4 4 0 014 4v2" />
-      <path d="M16 3.13a4 4 0 010 7.75" />
-      <path d="M21 20v-2a4 4 0 00-3-3.85" />
-    </svg>
-  );
-}
-function IconChallenges() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="8" r="6" />
-      <path d="M8.21 13.89L7 23l5-3 5 3-1.21-9.12" />
-    </svg>
-  );
-}
-function IconClients() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="7" r="4" />
-      <path d="M4 20v-2a4 4 0 014-4h8a4 4 0 014 4v2" />
-    </svg>
-  );
-}
-function IconTeam() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="7" r="4" />
-      <circle cx="5" cy="10" r="3" />
-      <circle cx="19" cy="10" r="3" />
-      <path d="M5 20v-2a3 3 0 013-3h8a3 3 0 013 3v2" />
-    </svg>
-  );
-}
-function IconPayments() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="1" y="4" width="22" height="16" rx="2" />
-      <line x1="1" y1="10" x2="23" y2="10" />
-    </svg>
-  );
-}
-function IconLibrary() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 016.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" />
-    </svg>
-  );
-}
-function IconScheduling() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" />
-      <line x1="16" y1="2" x2="16" y2="6" />
-      <line x1="8" y1="2" x2="8" y2="6" />
-      <line x1="3" y1="10" x2="21" y2="10" />
-    </svg>
-  );
-}
-function IconSetup() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-    </svg>
-  );
-}
-function IconAddons() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" />
-      <line x1="7" y1="7" x2="7.01" y2="7" />
-    </svg>
-  );
-}
-function IconChevronRight() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
-}
-function IconChevronDown() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-function IconBell() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 01-3.46 0" />
-    </svg>
-  );
-}
-function IconHelp() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10" />
-      <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
-      <line x1="12" y1="17" x2="12.01" y2="17" />
-    </svg>
-  );
-}
-function IconSearch() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8" />
-      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-    </svg>
-  );
-}
+/* ── Plans that skip the add-ons modal ─────────────────────────────────────── */
+const SKIP_ADDONS_PLANS = new Set(["Studio Plus", "Studio Max"]);
+
+/* ── Figma asset URLs — Sidebar icons ──────────────────────────────────────── */
+const FIG_LOGO       = "https://www.figma.com/api/mcp/asset/0d60fc96-4568-4f47-bac1-3e125a4542fb";
+const FIG_SEARCH     = "https://www.figma.com/api/mcp/asset/f79ec2d0-7b75-4b8c-b240-4e206044272e";
+const FIG_OVERVIEW   = "https://www.figma.com/api/mcp/asset/a72f724a-690e-421a-92fc-1d2622361e29";
+const FIG_MESSAGES   = "https://www.figma.com/api/mcp/asset/30d0e863-407d-4601-98b6-9fc809f92bbd";
+const FIG_GROUPS     = "https://www.figma.com/api/mcp/asset/34262117-d905-4082-949c-e0de21ea9659";
+const FIG_CHALLENGES = "https://www.figma.com/api/mcp/asset/e16a3c16-22ee-4d5a-8277-68b910ae6221";
+const FIG_CLIENTS    = "https://www.figma.com/api/mcp/asset/ac9f5625-ef18-4ff6-b4e0-57a9b4aeb8e5";
+const FIG_TEAM       = "https://www.figma.com/api/mcp/asset/926b64db-28a2-4abe-9c77-d62dfdbbcb91";
+const FIG_PAYMENTS   = "https://www.figma.com/api/mcp/asset/70964696-28aa-49ec-8730-5f6fc5c34a96";
+const FIG_MASTERS    = "https://www.figma.com/api/mcp/asset/648707ce-21c3-458c-b11f-825ea69bacd4";
+const FIG_CHEVRON    = "https://www.figma.com/api/mcp/asset/be21a625-1b99-4d63-8e50-64db37750595";
+const FIG_CALENDAR   = "https://www.figma.com/api/mcp/asset/043796c1-0021-42de-a2f9-a6cd7d4750d8";
+const FIG_SETUP      = "https://www.figma.com/api/mcp/asset/20448bb7-546f-400f-b083-e95b2d8163cf";
+const FIG_ADDONS_ICO = "https://www.figma.com/api/mcp/asset/8eb14e43-44c8-428a-b6d1-95979b827488";
+const FIG_SETTINGS   = "https://www.figma.com/api/mcp/asset/149a113a-1572-49cc-97c6-4a6c41d2451b";
+
+/* ── Figma asset URLs — TopBar icons ───────────────────────────────────────── */
+const FIG_AI_ICON    = "https://www.figma.com/api/mcp/asset/287963bc-30cf-424b-aadf-a9bf809fe476";
+const FIG_ADD_ICON   = "https://www.figma.com/api/mcp/asset/08229dea-1e9c-4981-86d7-7cdf79fb5d21";
+const FIG_BELL       = "https://www.figma.com/api/mcp/asset/538b9297-5b3e-45b0-a3bf-4584c234f9ea";
+const FIG_HELP       = "https://www.figma.com/api/mcp/asset/ea0a40d4-cea8-484a-8fa6-086e04666e07";
+const FIG_AVATAR     = "https://www.figma.com/api/mcp/asset/bb9a0a1f-5d84-488a-abdb-1827442a1bcb";
+const FIG_DOWNARROW  = "https://www.figma.com/api/mcp/asset/0fbaaf80-c050-4ddb-ba11-61809b4d520f";
+
+/* ── Reusable mini arrow icon ──────────────────────────────────────────────── */
 function IconArrowLeft() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="19" y1="12" x2="5" y2="12" />
-      <polyline points="12 19 5 12 12 5" />
-    </svg>
-  );
+  return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>;
 }
-function IconSparkle() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z" />
-    </svg>
-  );
-}
-
-/* ── Nav config ────────────────────────────────────────────────────────────── */
-
-type NavItem = {
-  label: string;
-  Icon: () => JSX.Element;
-  chevron?: boolean;
-  page?: Page;
-};
-
-const MAIN_NAV: NavItem[] = [
-  { label: "Overview",    Icon: IconHome,       page: "overview" },
-  { label: "Messages",    Icon: IconMessages },
-  { label: "Groups",      Icon: IconGroups },
-  { label: "Challenges",  Icon: IconChallenges },
-  { label: "Clients",     Icon: IconClients },
-  { label: "Team",        Icon: IconTeam },
-  { label: "Payments",    Icon: IconPayments },
-  { label: "Master Lib.", Icon: IconLibrary,    chevron: true },
-  { label: "Scheduling",  Icon: IconScheduling, chevron: true },
-];
-
-const OTHER_NAV: NavItem[] = [
-  { label: "Setup Guide", Icon: IconSetup },
-  { label: "Add-ons",     Icon: IconAddons,    page: "pricing" },
-  { label: "Settings",    Icon: IconSetup },
-];
 
 /* ── Sidebar ────────────────────────────────────────────────────────────────── */
 
-function Sidebar({
-  activePage,
-  onNavigate,
-}: {
-  activePage: Page;
-  onNavigate: (p: Page) => void;
-}) {
+type NavItem = {
+  label: string; icon: string; chevron?: boolean;
+  tourAttr?: string; page?: Page;
+};
+
+const MAIN_NAV: NavItem[] = [
+  { label: "Overview",    icon: FIG_OVERVIEW,   page: "overview" },
+  { label: "Messages",    icon: FIG_MESSAGES,   tourAttr: "messages" },
+  { label: "Groups",      icon: FIG_GROUPS },
+  { label: "Challenges",  icon: FIG_CHALLENGES },
+  { label: "Clients",     icon: FIG_CLIENTS },
+  { label: "Team",        icon: FIG_TEAM },
+  { label: "Payments",    icon: FIG_PAYMENTS,   tourAttr: "payments" },
+  { label: "Master Lib.", icon: FIG_MASTERS,    chevron: true, tourAttr: "master-lib" },
+  { label: "Scheduling",  icon: FIG_CALENDAR,   chevron: true, tourAttr: "scheduling" },
+];
+
+const OTHER_NAV: NavItem[] = [
+  { label: "Setup Guide", icon: FIG_SETUP,      tourAttr: "setup-guide" },
+  { label: "Add-ons",     icon: FIG_ADDONS_ICO, page: "addons" },
+  { label: "Settings",    icon: FIG_SETTINGS,   page: "billing" },
+];
+
+function Sidebar({ activePage, onNavigate }: { activePage: Page; onNavigate: (p: Page) => void }) {
   return (
     <nav className="sidebar" aria-label="Main navigation">
-      <div className="sidebar__logo">
-        <span className="sidebar__logo-mark">T</span>
-        <span className="sidebar__brand">Trainerize</span>
+      {/* Logo */}
+      <div className="sidebar__header">
+        <img src={FIG_LOGO} alt="" className="sidebar__logo-img" aria-hidden="true" />
+        <span className="sidebar__brand">TRAINERIZE</span>
       </div>
 
-      <div className="sidebar__search">
-        <span className="sidebar__search-icon"><IconSearch /></span>
-        <span className="sidebar__search-text">Find a client</span>
+      {/* Search */}
+      <div className="sidebar__search-wrap">
+        <div className="sidebar__search">
+          <img src={FIG_SEARCH} alt="" className="sidebar__search-icon" />
+          <span className="sidebar__search-text">Find a client</span>
+        </div>
       </div>
 
-      <p className="sidebar__section-label">Main Menu</p>
+      {/* Main menu */}
+      <p className="sidebar__section-label">MAIN MENU</p>
       <ul className="sidebar__nav">
-        {MAIN_NAV.map(({ label, Icon, chevron, page }) => (
-          <li
-            key={label}
-            className={`sidebar__nav-item${page === activePage ? " sidebar__nav-item--active" : ""}`}
-            onClick={() => page && onNavigate(page)}
-          >
-            <span className="sidebar__nav-icon"><Icon /></span>
-            <span className="sidebar__nav-label">{label}</span>
-            {chevron && <span className="sidebar__nav-chevron"><IconChevronRight /></span>}
-          </li>
-        ))}
+        {MAIN_NAV.map(({ label, icon, chevron, tourAttr, page }) => {
+          const isActive = page ? activePage === page : false;
+          const extra: Record<string, string> = {};
+          if (tourAttr) extra["data-tour"] = tourAttr;
+          return (
+            <li key={label}>
+              <div
+                className={`sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`}
+                onClick={() => page && onNavigate(page)}
+                style={page ? { cursor: "pointer" } : undefined}
+                role={page ? "button" : undefined}
+                {...extra}
+              >
+                <img src={icon} alt="" className="sidebar__nav-icon-img" />
+                <span className="sidebar__nav-label">{label}</span>
+                {chevron && (
+                  <img src={FIG_CHEVRON} alt="" className="sidebar__nav-chevron-img" />
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
-      <p className="sidebar__section-label">Other</p>
+      {/* Other */}
+      <p className="sidebar__section-label">OTHER</p>
       <ul className="sidebar__nav">
-        {OTHER_NAV.map(({ label, Icon, page }) => (
-          <li
-            key={label}
-            className={`sidebar__nav-item${page === activePage ? " sidebar__nav-item--active" : ""}`}
-            onClick={() => page && onNavigate(page)}
-          >
-            <span className="sidebar__nav-icon"><Icon /></span>
-            <span className="sidebar__nav-label">{label}</span>
-          </li>
-        ))}
+        {OTHER_NAV.map(({ label, icon, tourAttr, page }) => {
+          const isActive = page ? activePage === page : false;
+          const extra: Record<string, string> = {};
+          if (tourAttr) extra["data-tour"] = tourAttr;
+          return (
+            <li key={label}>
+              <div
+                className={`sidebar__nav-item${isActive ? " sidebar__nav-item--active" : ""}`}
+                onClick={() => page && onNavigate(page)}
+                style={page ? { cursor: "pointer" } : undefined}
+                role={page ? "button" : undefined}
+                {...extra}
+              >
+                <img src={icon} alt="" className="sidebar__nav-icon-img" />
+                <span className="sidebar__nav-label">{label}</span>
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );
@@ -257,32 +161,45 @@ function Sidebar({
 function TopBar({ onUpgrade }: { onUpgrade: () => void }) {
   return (
     <header className="topbar">
+      {/* Left: trial progress + upgrade button */}
       <div className="topbar__left">
-        <span className="topbar__plan-text">
-          Your Free plan has limited client seats and features. Upgrade today to unlock more.
-        </span>
+        <div className="topbar__trial">
+          <p className="topbar__trial-text">17 days left in your 30 day Trial.</p>
+          <div className="topbar__trial-bar-wrap">
+            <div className="topbar__trial-bar">
+              {/* 17/23 days ≈ 74% */}
+              <div className="topbar__trial-fill" style={{ width: "74%" }} />
+            </div>
+          </div>
+        </div>
         <button type="button" className="topbar__upgrade-btn" onClick={onUpgrade}>
           UPGRADE PLAN
         </button>
       </div>
+
+      {/* Right: AI builder, add, bell, help, user */}
       <div className="topbar__right">
-        <button type="button" className="topbar__ai-btn" aria-label="AI Builder">
-          <IconSparkle />
+        <button type="button" className="topbar__ai-btn" aria-label="AI Builder" data-tour="add-btn">
+          <img src={FIG_AI_ICON} alt="" className="topbar__ai-icon" />
           AI BUILDER
         </button>
-        <button type="button" className="topbar__add-btn" aria-label="Add new">
-          +
+
+        <button type="button" className="topbar__add-btn" aria-label="Add">
+          <img src={FIG_ADD_ICON} alt="" className="topbar__icon-img" />
         </button>
-        <button type="button" className="topbar__icon-btn" aria-label="Notifications">
-          <IconBell />
+
+        <button type="button" className="topbar__icon-wrap" aria-label="Notifications">
+          <img src={FIG_BELL} alt="" className="topbar__icon-img" />
         </button>
-        <button type="button" className="topbar__icon-btn" aria-label="Help">
-          <IconHelp />
+
+        <button type="button" className="topbar__icon-wrap" aria-label="Help" data-tour="help-btn">
+          <img src={FIG_HELP} alt="" className="topbar__icon-img" />
         </button>
+
         <button type="button" className="topbar__user" aria-label="User menu">
-          <span className="topbar__avatar">TO</span>
+          <img src={FIG_AVATAR} alt="Profile" className="topbar__avatar-img" />
           <span className="topbar__username">Trainer O.</span>
-          <span className="topbar__chevron"><IconChevronDown /></span>
+          <img src={FIG_DOWNARROW} alt="" className="topbar__downarrow" />
         </button>
       </div>
     </header>
@@ -291,7 +208,10 @@ function TopBar({ onUpgrade }: { onUpgrade: () => void }) {
 
 /* ── Pricing Page ─────────────────────────────────────────────────────────────── */
 
-function PricingPage({ onBack }: { onBack: () => void }) {
+function PricingPage({ onBack, onPlanSelect }: {
+  onBack: () => void;
+  onPlanSelect: (planName: string, planPrice: number) => void;
+}) {
   const [billing, setBilling] = useState<BillingPeriod>("yearly");
   const [proSeats, setProSeats] = useState(5);
   const [tier3Seat, setTier3Seat] = useState<StudioTier>(500);
@@ -299,8 +219,7 @@ function PricingPage({ onBack }: { onBack: () => void }) {
   const isEnterprise = tier3Seat === "1000+";
   const tier3Row = STUDIO_SEAT_OPTIONS.find((o) => o.seats === tier3Seat)!;
   const tier3Price = billing === "monthly" ? tier3Row.monthly : tier3Row.yearly;
-  const tier3Name =
-    tier3Seat === 500 ? "Studio Plus" : tier3Seat === 1000 ? "Studio Max" : "Enterprise";
+  const tier3Name = tier3Seat === 500 ? "Studio Plus" : tier3Seat === 1000 ? "Studio Max" : "Enterprise";
   const tier3Desc = isEnterprise ? ENTERPRISE_PLAN.description : STUDIO_PLAN.description;
   const tier3FeatureTitle = isEnterprise ? ENTERPRISE_PLAN.featureTitle : STUDIO_PLAN.featureTitle;
   const tier3Features = isEnterprise ? ENTERPRISE_PLAN.features : STUDIO_PLAN.features;
@@ -317,9 +236,7 @@ function PricingPage({ onBack }: { onBack: () => void }) {
           <IconArrowLeft /> Back
         </button>
         <div className="pg-hero">
-          <h1 className="pg-hero__title">
-            Plans designed for every business size and type.
-          </h1>
+          <h1 className="pg-hero__title">Plans designed for every business size and type.</h1>
           <p className="pg-hero__sub">Select a plan best suited for you business</p>
           <BillingToggle billing={billing} onChange={setBilling} />
         </div>
@@ -327,62 +244,41 @@ function PricingPage({ onBack }: { onBack: () => void }) {
 
       <div className="plan-grid">
         <PricingTierCard
-          name="Grow"
-          description={GROW_PLAN.description}
+          name="Grow" description={GROW_PLAN.description}
           seatControl={<GrowSeatDisplay seats={GROW_PLAN.seats} />}
-          price={growPrice}
-          onSelect={() => {}}
-          featureTitle={GROW_PLAN.featureTitle}
-          features={GROW_PLAN.features}
-          optionalAddons={GROW_PLAN.optionalAddons}
-          addonTooltips={GROW_PLAN.addonTooltips}
+          price={growPrice} onSelect={() => onPlanSelect("Grow", growPrice)}
+          featureTitle={GROW_PLAN.featureTitle} features={GROW_PLAN.features}
+          optionalAddons={GROW_PLAN.optionalAddons} addonTooltips={GROW_PLAN.addonTooltips}
         />
-
         <PricingTierCard
-          name={`Pro ${proSeats}`}
-          description={PRO_PLAN.description}
+          name={`Pro ${proSeats}`} description={PRO_PLAN.description}
           seatControl={<ProSeatGrid value={proSeats} onChange={setProSeats} />}
-          price={proPrice}
-          onSelect={() => {}}
-          featureTitle={PRO_PLAN.featureTitle}
-          features={PRO_PLAN.features}
-          optionalAddons={PRO_PLAN.optionalAddons}
-          addonTooltips={PRO_PLAN.addonTooltips}
+          price={proPrice} onSelect={() => onPlanSelect(`Pro ${proSeats}`, proPrice)}
+          featureTitle={PRO_PLAN.featureTitle} features={PRO_PLAN.features}
+          optionalAddons={PRO_PLAN.optionalAddons} addonTooltips={PRO_PLAN.addonTooltips}
           mostPopular={proSeats === PRO_POPULAR_SEATS || proSeats === PRO_POPULAR_SEATS_MONTHLY}
         />
-
         <PricingTierCard
-          name={tier3Name}
-          description={tier3Desc}
+          name={tier3Name} description={tier3Desc}
           seatControl={<StudioTierGrid value={tier3Seat} onChange={setTier3Seat} />}
           price={isEnterprise ? "custom" : tier3Price}
           priceNote={isEnterprise ? "(5+ Locations)" : "per location (1–4 locations)"}
-          onSelect={() => {}}
+          onSelect={() => !isEnterprise && onPlanSelect(tier3Name, tier3Price)}
           ctaLabel={isEnterprise ? "CONTACT US" : "SELECT"}
-          featureTitle={tier3FeatureTitle}
-          features={tier3Features}
+          featureTitle={tier3FeatureTitle} features={tier3Features}
           includedAddons={tier3Addons}
-          includedAddonTooltips={
-            isEnterprise
-              ? ENTERPRISE_PLAN.includedAddonTooltips
-              : STUDIO_PLAN.includedAddonTooltips
-          }
+          includedAddonTooltips={isEnterprise ? ENTERPRISE_PLAN.includedAddonTooltips : STUDIO_PLAN.includedAddonTooltips}
           showSaveBadge
-          noIconAddons={
-            isEnterprise ? new Set(["Custom Branded App (Enterprise)"]) : undefined
-          }
+          noIconAddons={isEnterprise ? new Set(["Custom Branded App (Enterprise)"]) : undefined}
         />
       </div>
 
       <div className="pg-footer">
-        <a className="pg-footer__link" href="#compare">
-          Compare all plans and features
-        </a>
+        <a className="pg-footer__link" href="#compare">Compare all plans and features</a>
         <p className="pg-footer__legal">
-          Trainerize monthly and annual subscription fees will be billed in US
-          dollars and are subject to government tax and other prevailing charges.
-          Your subscription is set to auto-renew monthly or annually, depending
-          on the type of plan you have selected.
+          Trainerize monthly and annual subscription fees will be billed in US dollars and are
+          subject to government tax and other prevailing charges. Your subscription is set to
+          auto-renew monthly or annually, depending on the type of plan you have selected.
         </p>
       </div>
     </div>
@@ -393,18 +289,74 @@ function PricingPage({ onBack }: { onBack: () => void }) {
 
 export default function App() {
   const [activePage, setActivePage] = useState<Page>("overview");
+  const [upgradeCtx, setUpgradeCtx] = useState<UpgradeCtx>(null);
+
+  function startUpgrade(planName: string, planPrice: number) {
+    if (SKIP_ADDONS_PLANS.has(planName)) {
+      setUpgradeCtx({ step: "checkout", planName, planPrice, selectedAddons: new Set() });
+    } else {
+      setUpgradeCtx({ step: "addons", planName, planPrice, selectedAddons: new Set() });
+    }
+  }
+
+  function goToCheckout(selectedAddons: Set<string>) {
+    if (!upgradeCtx || upgradeCtx.step !== "addons") return;
+    setUpgradeCtx({ step: "checkout", planName: upgradeCtx.planName, planPrice: upgradeCtx.planPrice, selectedAddons });
+  }
+
+  function goBackToAddons() {
+    if (!upgradeCtx || upgradeCtx.step !== "checkout") return;
+    if (SKIP_ADDONS_PLANS.has(upgradeCtx.planName)) return;
+    setUpgradeCtx({ step: "addons", planName: upgradeCtx.planName, planPrice: upgradeCtx.planPrice, selectedAddons: upgradeCtx.selectedAddons });
+  }
+
+  function confirmUpgrade() {
+    if (!upgradeCtx || upgradeCtx.step !== "checkout") return;
+    setUpgradeCtx({ step: "success", planName: upgradeCtx.planName });
+  }
+
+  function closeFlow() {
+    setUpgradeCtx(null);
+    setActivePage("billing");
+  }
 
   return (
     <div className="app">
       <Sidebar activePage={activePage} onNavigate={setActivePage} />
       <div className="main-column">
         <TopBar onUpgrade={() => setActivePage("pricing")} />
-        {activePage === "overview" ? (
+
+        {activePage === "overview" && (
           <OverviewPage onUpgrade={() => setActivePage("pricing")} />
-        ) : (
-          <PricingPage onBack={() => setActivePage("overview")} />
+        )}
+        {activePage === "billing" && (
+          <BillingPage onUpgrade={() => setActivePage("pricing")} onBrowseAddons={() => setActivePage("addons")} />
+        )}
+        {activePage === "pricing" && (
+          <PricingPage onBack={() => setActivePage("billing")} onPlanSelect={startUpgrade} />
+        )}
+        {activePage === "addons" && (
+          <AddonsPage onBuyAddon={(name) => startUpgrade(name, 0)} />
         )}
       </div>
+
+      {/* ── Upgrade flow modals ── */}
+      {upgradeCtx?.step === "addons" && (
+        <UpgradeAddOnsModal planName={upgradeCtx.planName} onClose={() => setUpgradeCtx(null)} onProceed={goToCheckout} />
+      )}
+      {upgradeCtx?.step === "checkout" && (
+        <CheckoutModal
+          planName={upgradeCtx.planName} planPrice={upgradeCtx.planPrice}
+          selectedAddons={upgradeCtx.selectedAddons}
+          onBack={goBackToAddons} onConfirm={confirmUpgrade} onClose={() => setUpgradeCtx(null)}
+        />
+      )}
+      {upgradeCtx?.step === "success" && (
+        <ConfirmationDialog planName={upgradeCtx.planName} onClose={closeFlow} />
+      )}
+
+      {/* Product tour — always rendered, auto-starts */}
+      <ProductTour />
     </div>
   );
 }
